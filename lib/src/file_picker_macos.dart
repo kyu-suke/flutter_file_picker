@@ -57,7 +57,7 @@ class FilePickerMacOS extends FilePicker {
     final String executable = await isExecutableOnPath('osascript');
 
     final String fileFilter = fileTypeToFileFilter(
-      FileType.any,
+      type,
       allowedExtensions,
     );
 

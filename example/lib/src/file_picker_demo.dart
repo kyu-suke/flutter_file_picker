@@ -79,7 +79,12 @@ class _FilePickerDemoState extends State<FilePickerDemo> {
   void _selectFolder() async {
     _resetState();
     try {
-      String? path = await FilePicker.platform.getDirectoryPath(pickDirectory: false);
+      String? path = await FilePicker.platform.getDirectoryPath(
+          pickDirectory: false,
+        type: _pickingType,
+        allowedExtensions: (_extension?.isNotEmpty ?? false)
+            ? _extension?.replaceAll(' ', '').split(',')
+            : null,);
       setState(() {
         _directoryPath = path;
         _userAborted = path == null;
