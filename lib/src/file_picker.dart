@@ -134,7 +134,11 @@ abstract class FilePicker extends PlatformInterface {
   ///
   /// Returns `null` if aborted or if the folder path couldn't be resolved.
   Future<String?> getDirectoryPath(
-          {String? dialogTitle, bool lockParentWindow = false}) async =>
+          {String? dialogTitle,
+          bool lockParentWindow = false,
+          pickDirectory = true,
+          FileType type = FileType.any,
+          List<String>? allowedExtensions}) async =>
       throw UnimplementedError('getDirectoryPath() has not been implemented.');
 
   /// Opens a save file dialog which lets the user select a file path and a file

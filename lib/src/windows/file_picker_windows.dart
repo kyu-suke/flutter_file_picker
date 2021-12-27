@@ -60,6 +60,9 @@ class FilePickerWindows extends FilePicker {
   Future<String?> getDirectoryPath({
     String? dialogTitle,
     bool lockParentWindow = false,
+    pickDirectory = true,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
   }) {
     final pathIdPointer =
         _pickDirectory(dialogTitle ?? defaultDialogTitle, lockParentWindow);
