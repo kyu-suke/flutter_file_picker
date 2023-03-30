@@ -37,6 +37,7 @@ class FilePickerWeb extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     bool allowMultiple = false,
@@ -59,6 +60,7 @@ class FilePickerWeb extends FilePicker {
     uploadInput.draggable = true;
     uploadInput.multiple = allowMultiple;
     uploadInput.accept = accept;
+    uploadInput.style.display = 'none';
 
     bool changeEventTriggered = false;
 
@@ -126,7 +128,7 @@ class FilePickerWeb extends FilePicker {
       // This listener is called before the input changed event,
       // and the `uploadInput.files` value is still null
       // Wait for results from js to dart
-      Future.delayed(Duration(milliseconds: 500)).then((value) {
+      Future.delayed(Duration(seconds: 1)).then((value) {
         if (!changeEventTriggered) {
           changeEventTriggered = true;
           filesCompleter.complete(null);

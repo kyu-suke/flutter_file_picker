@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/src/file_picker_io.dart';
-import 'package:file_picker/src/file_picker_linux.dart';
 import 'package:file_picker/src/file_picker_macos.dart';
+import 'package:file_picker/src/file_picker_result.dart';
+import 'package:file_picker/src/linux/file_picker_linux.dart';
 import 'package:file_picker/src/windows/stub.dart'
     if (dart.library.io) 'package:file_picker/src/windows/file_picker_windows.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'file_picker_result.dart';
-
-const String defaultDialogTitle = 'File Picker';
+const String defaultDialogTitle = '';
 
 enum FileType {
   any,
@@ -38,7 +37,7 @@ abstract class FilePicker extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static late FilePicker _instance = FilePicker._setPlatform();
+  static FilePicker _instance = FilePicker._setPlatform();
 
   static FilePicker get platform => _instance;
 
@@ -90,6 +89,9 @@ abstract class FilePicker extends PlatformInterface {
   /// [dialogTitle] can be optionally set on desktop platforms to set the modal window title. It will be ignored on
   /// other platforms.
   ///
+  /// [initialDirectory] can be optionally set to an absolute path to specify
+  /// where the dialog should open. Only supported on Linux, macOS, and Windows.
+  ///
   /// The result is wrapped in a [FilePickerResult] which contains helper getters
   /// with useful information regarding the picked [List<PlatformFile>].
   ///
@@ -98,6 +100,7 @@ abstract class FilePicker extends PlatformInterface {
   /// Returns `null` if aborted.
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     Function(FilePickerStatus)? onFileLoading,
@@ -132,9 +135,21 @@ abstract class FilePicker extends PlatformInterface {
   /// stay in front of the Flutter window until it is closed (like a modal
   /// window). This parameter works only on Windows desktop.
   ///
-  /// Returns `null` if aborted or if the folder path couldn't be resolved.
-  Future<String?> getDirectoryPath(
-          {String? dialogTitle, bool lockParentWindow = false}) async =>
+  /// [initialDirectory] can be optionally set to an absolute path to specify
+  /// where the dialog should open. Only supported on Linux and macOS.
+  ///
+  /// Returns a [Future<String?>] which resolves to  the absolute path of the selected directory,
+  /// if the user selected a directory. Returns `null` if the user aborted the dialog or if the
+  /// folder path couldn't be resolved.
+  ///
+  /// Note: on Windows, throws a `WindowsException` with a detailed error message, if the dialog
+  /// could not be instantiated or the dialog result could not be interpreted.
+  /// Note: Some Android paths are protected, hence can't be accessed and will return `/` instead.
+  Future<String?> getDirectoryPath({
+    String? dialogTitle,
+    bool lockParentWindow = false,
+    String? initialDirectory,
+  }) async =>
       throw UnimplementedError('getDirectoryPath() has not been implemented.');
 
   /// Opens a save file dialog which lets the user select a file path and a file
@@ -150,7 +165,11 @@ abstract class FilePicker extends PlatformInterface {
   /// [dialogTitle] can be set to display a custom title on desktop platforms.
   ///
   /// [fileName] can be set to a non-empty string to provide a default file
-  /// name.
+  /// name. Throws an `IllegalCharacterInFileNameException` under Windows if the
+  /// given [fileName] contains forbidden characters.
+  ///
+  /// [initialDirectory] can be optionally set to an absolute path to specify
+  /// where the dialog should open. Only supported on Linux, macOS, and Windows.
   ///
   /// The file type filter [type] defaults to [FileType.any]. Optionally,
   /// [allowedExtensions] might be provided (e.g. `[pdf, svg, jpg]`.). Both
@@ -166,6 +185,7 @@ abstract class FilePicker extends PlatformInterface {
   Future<String?> saveFile({
     String? dialogTitle,
     String? fileName,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     bool lockParentWindow = false,

@@ -5,6 +5,7 @@ class FilePickerMacOS extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     Function(FilePickerStatus)? onFileLoading,
@@ -22,6 +23,7 @@ class FilePickerMacOS extends FilePicker {
     final List<String> arguments = generateCommandLineArguments(
       escapeDialogTitle(dialogTitle ?? defaultDialogTitle),
       fileFilter: fileFilter,
+      initialDirectory: initialDirectory ?? '',
       multipleFiles: allowMultiple,
       pickDirectory: false,
     );
@@ -50,10 +52,12 @@ class FilePickerMacOS extends FilePicker {
   Future<String?> getDirectoryPath({
     String? dialogTitle,
     bool lockParentWindow = false,
+    String? initialDirectory,
   }) async {
     final String executable = await isExecutableOnPath('osascript');
     final List<String> arguments = generateCommandLineArguments(
       escapeDialogTitle(dialogTitle ?? defaultDialogTitle),
+      initialDirectory: initialDirectory ?? '',
       pickDirectory: true,
     );
 
@@ -72,6 +76,7 @@ class FilePickerMacOS extends FilePicker {
   Future<String?> saveFile({
     String? dialogTitle,
     String? fileName,
+    String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     bool lockParentWindow = false,
@@ -85,6 +90,7 @@ class FilePickerMacOS extends FilePicker {
       escapeDialogTitle(dialogTitle ?? defaultDialogTitle),
       fileFilter: fileFilter,
       fileName: fileName ?? '',
+      initialDirectory: initialDirectory ?? '',
       saveFile: true,
     );
 
@@ -106,7 +112,7 @@ class FilePickerMacOS extends FilePicker {
       case FileType.audio:
         return '"aac", "midi", "mp3", "ogg", "wav"';
       case FileType.custom:
-        return '"", "' + allowedExtensions!.join('", "') + '"';
+        return '"", "${allowedExtensions!.join('", "')}"';
       case FileType.image:
         return '"bmp", "gif", "jpeg", "jpg", "png"';
       case FileType.media:
@@ -122,6 +128,7 @@ class FilePickerMacOS extends FilePicker {
     String dialogTitle, {
     String fileFilter = '',
     String fileName = '',
+    String initialDirectory = '',
     bool multipleFiles = false,
     bool pickDirectory = false,
     bool saveFile = false,
@@ -141,12 +148,18 @@ class FilePickerMacOS extends FilePicker {
           argument += 'default name "$fileName" ';
         }
       } else {
-        argument += 'of type {$fileFilter} ';
+        if (fileFilter.isNotEmpty) {
+          argument += 'of type {$fileFilter} ';
+        }
 
         if (multipleFiles) {
           argument += 'with multiple selections allowed ';
         }
       }
+    }
+
+    if (initialDirectory.isNotEmpty) {
+      argument += 'default location "$initialDirectory" ';
     }
 
     argument += 'with prompt "$dialogTitle"';
